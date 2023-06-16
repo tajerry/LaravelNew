@@ -2,22 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\News;
 use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
     public function index(){
-       $news = $this->getNews();
-       return view('news.index', [
-           'newsList'=>$news
-       ]);
-    }
-    public function show(int $id){
-        return view('news.show', [
-            'news'=>$this->getNews('', $id)
+        $news = app(News::class);
+        return view('news.index',[
+            'newsList' => $news->getNews()
         ]);
     }
-    public function getAllNews(){
-        echo '[news_1, news_2, news_3]';
+    public function show(int $id):mixed
+    {
+        $newsList = app(News::class);
+        $news = $newsList->getNewsById($id);
+        return view('news.show' , [
+           'news' => $news
+        ]);
+    }
+    public function category(int $id):mixed
+    {
+        $newsList = app(News::class);
+        $news = $newsList->getNewsByCategoryId($id);
+        return view('news.show' , [
+            'news' => $news
+        ]);
     }
 }

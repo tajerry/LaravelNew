@@ -18,7 +18,7 @@
             </div>
             <div class="form-group">
                 <label for="author">
-                    Author
+                    Автор
                 </label>
                 <input type="text" class="form-control" name="author" id="author" value="{{old('author')}}">
             </div>
@@ -29,7 +29,7 @@
             </select>
             <div class="form-group">
                 <label for="description">
-                    Description
+                    Описание
                 </label>
                 <textarea class="form-control" name="description" id="description">{{old('description')}}</textarea>
             </div>

@@ -4,24 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class News extends Model
 {
     use HasFactory;
     protected $table ='news';
-    public function getNews():array
+    protected $fillable = [
+        'id', 'title', 'author', 'category_id', 'status', 'image', 'description',
+    ];
+    public function category():BelongsTo
     {
-        return \DB::table($this->table)
-            ->join('categories', 'news.category_id', '=', 'categories.id')
-            ->select ('news.*', 'categories.title as categoryTitle' )
-            ->where('status', 'ACTIVE')
-            ->orderBy('news.id', 'desc')
-            ->get()
-            ->toArray();
-    }
-    public function getNewsById(int $id):mixed
-    {
-        return \DB::table($this->table)
-            ->find($id);
+        return $this->belongsTo(Category::class);
     }
 }

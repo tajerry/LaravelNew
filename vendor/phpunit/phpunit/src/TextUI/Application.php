@@ -27,7 +27,6 @@ use PHPUnit\Logging\TeamCity\TeamCityLogger;
 use PHPUnit\Logging\TestDox\HtmlRenderer as TestDoxHtmlRenderer;
 use PHPUnit\Logging\TestDox\PlainTextRenderer as TestDoxTextRenderer;
 use PHPUnit\Logging\TestDox\TestResultCollector as TestDoxResultCollector;
-use PHPUnit\Metadata\Api\CodeCoverage as CodeCoverageMetadataApi;
 use PHPUnit\Runner\CodeCoverage;
 use PHPUnit\Runner\Extension\ExtensionBootstrapper;
 use PHPUnit\Runner\Extension\Facade as ExtensionFacade;
@@ -104,11 +103,7 @@ final class Application
             $this->executeCommandsThatRequireCliConfigurationAndTestSuite($cliConfiguration, $testSuite);
             $this->executeHelpCommandWhenThereIsNothingElseToDo($configuration, $testSuite);
 
-            $pharExtensions                          = null;
-            $extensionRequiresCodeCoverageCollection = false;
-            $extensionReplacesOutput                 = false;
-            $extensionReplacesProgressOutput         = false;
-            $extensionReplacesResultOutput           = false;
+            $pharExtensions = null;
 
             if (!$configuration->noExtensions()) {
                 if ($configuration->hasPharExtensionDirectory()) {
@@ -117,38 +112,18 @@ final class Application
                     );
                 }
 
-                $bootstrappedExtensions                  = $this->bootstrapExtensions($configuration);
-                $extensionRequiresCodeCoverageCollection = $bootstrappedExtensions['requiresCodeCoverageCollection'];
-                $extensionReplacesOutput                 = $bootstrappedExtensions['replacesOutput'];
-                $extensionReplacesProgressOutput         = $bootstrappedExtensions['replacesProgressOutput'];
-                $extensionReplacesResultOutput           = $bootstrappedExtensions['replacesResultOutput'];
+                $this->bootstrapExtensions($configuration);
             }
 
-            CodeCoverage::instance()->init(
-                $configuration,
-                CodeCoverageFilterRegistry::instance(),
-                $extensionRequiresCodeCoverageCollection
-            );
+            CodeCoverage::instance()->init($configuration, CodeCoverageFilterRegistry::instance());
 
-            if (CodeCoverage::instance()->isActive()) {
-                CodeCoverage::instance()->ignoreLines(
-                    (new CodeCoverageMetadataApi)->linesToBeIgnored($testSuite)
-                );
-            }
+            $printer = OutputFacade::init($configuration);
 
-            $printer = OutputFacade::init(
-                $configuration,
-                $extensionReplacesProgressOutput,
-                $extensionReplacesResultOutput
-            );
+            $this->writeRuntimeInformation($printer, $configuration);
+            $this->writePharExtensionInformation($printer, $pharExtensions);
+            $this->writeRandomSeedInformation($printer, $configuration);
 
-            if (!$extensionReplacesOutput) {
-                $this->writeRuntimeInformation($printer, $configuration);
-                $this->writePharExtensionInformation($printer, $pharExtensions);
-                $this->writeRandomSeedInformation($printer, $configuration);
-
-                $printer->print(PHP_EOL);
-            }
+            $printer->print(PHP_EOL);
 
             $this->registerLogfileWriters($configuration);
 
@@ -195,20 +170,15 @@ final class Application
 
             $result = TestResultFacade::result();
 
-            if (!$extensionReplacesResultOutput) {
-                OutputFacade::printResult($result, $testDoxResult, $duration);
-            }
-
+            OutputFacade::printResult($result, $testDoxResult, $duration);
             CodeCoverage::instance()->generateReports($printer, $configuration);
 
             $shellExitCode = (new ShellExitCodeCalculator)->calculate(
-                $configuration->failOnDeprecation(),
                 $configuration->failOnEmptyTestSuite(),
-                $configuration->failOnIncomplete(),
-                $configuration->failOnNotice(),
                 $configuration->failOnRisky(),
-                $configuration->failOnSkipped(),
                 $configuration->failOnWarning(),
+                $configuration->failOnIncomplete(),
+                $configuration->failOnSkipped(),
                 $result
             );
 
@@ -290,29 +260,16 @@ final class Application
         try {
             include_once $filename;
         } catch (Throwable $t) {
-            $message = sprintf(
-                'Error in bootstrap script: %s:%s%s%s%s',
-                $t::class,
-                PHP_EOL,
-                $t->getMessage(),
-                PHP_EOL,
-                $t->getTraceAsString()
-            );
-
-            while ($t = $t->getPrevious()) {
-                $message .= sprintf(
-                    '%s%sPrevious error: %s:%s%s%s%s',
-                    PHP_EOL,
-                    PHP_EOL,
+            $this->exitWithErrorMessage(
+                sprintf(
+                    'Error in bootstrap script: %s:%s%s%s%s',
                     $t::class,
                     PHP_EOL,
                     $t->getMessage(),
                     PHP_EOL,
-                    $t->getTraceAsString(),
-                );
-            }
-
-            $this->exitWithErrorMessage($message);
+                    $t->getTraceAsString()
+                )
+            );
         }
 
         EventFacade::emitter()->testRunnerBootstrapFinished($filename);
@@ -351,16 +308,11 @@ final class Application
         }
     }
 
-    /**
-     * @psalm-return array{requiresCodeCoverageCollection: bool, replacesOutput: bool, replacesProgressOutput: bool, replacesResultOutput: bool}
-     */
-    private function bootstrapExtensions(Configuration $configuration): array
+    private function bootstrapExtensions(Configuration $configuration): void
     {
-        $facade = new ExtensionFacade;
-
         $extensionBootstrapper = new ExtensionBootstrapper(
             $configuration,
-            $facade
+            new ExtensionFacade
         );
 
         foreach ($configuration->extensionBootstrappers() as $bootstrapper) {
@@ -378,13 +330,6 @@ final class Application
                 );
             }
         }
-
-        return [
-            'requiresCodeCoverageCollection' => $facade->requiresCodeCoverageCollection(),
-            'replacesOutput'                 => $facade->replacesOutput(),
-            'replacesProgressOutput'         => $facade->replacesProgressOutput(),
-            'replacesResultOutput'           => $facade->replacesResultOutput(),
-        ];
     }
 
     private function executeCommandsThatOnlyRequireCliConfiguration(CliConfiguration $cliConfiguration, string|false $configurationFile): void

@@ -1,7 +1,7 @@
 @extends('layouts.main')
 @section('title') News create @endsection
 @section('content')
-    <h2 class="float-center d-block mt-2 mr-1 text-center">Comment create</h2>
+    <h2 class="float-center d-block mt-2 mr-1 text-center">Создать комментарий</h2>
     <div class="raw">
         @if($errors->any())
             @foreach($errors->all() as $error)
@@ -12,13 +12,13 @@
             @csrf
             <div class="form-group">
                 <label for="name">
-                    Name
+                    Имя
                 </label>
                 <input type="text" class="form-control" name="name" id="name" value="{{old('name')}}">
             </div>
             <div class="form-group">
                 <label for="Rating">
-                    Rating
+                    Рейтинг
                 </label>
                 <select name="rating" id="rating" class="form-control">
                     <option @if(old('rating') === '1') selected @endif>1</option>
@@ -31,7 +31,7 @@
 
             <div class="form-group">
                 <label for="comment">
-                    Comment
+                    Комментарий
                 </label>
                 <textarea class="form-control" name="comment" id="comment">{{old('comment')}}</textarea>
             </div>

@@ -1,37 +1,45 @@
 @extends('layouts.admin')
-@section('title') Categories list @endsection
+@section('title') Категории @endsection
 @section('content')
-    <h2 class="float-center d-block mt-2 mr-1 text-center">Categories</h2>
+    <h2 class="float-center d-block mt-2 mr-1 text-center">Категории</h2>
+    @include('inc.messages')
     <div class="mb-3 pb-3">
-        <a href="{!! route('admin.categories.create') !!}" class="float-right d-block  mb-3 mr-3 text-center" >Create category</a><br>
+        <a href="{!! route('admin.categories.create') !!}" class="float-right d-block  mb-3 mr-3 text-center" >Создать категорию</a><br>
     </div>
     <div class="table-responsive">
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>#ID</th>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Option</th>
+                    <th>Количество новостей</th>
+                    <th>Наименование</th>
+                    <th>Описание</th>
+                    <th>Опции</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($categories as $category)
                     <tr>
                         <td>{{$category->id}}</td>
+                        <td>{{$category->news->count()}}</td>
                         <td>{{$category->title}}</td>
                         <td>{{$category->description}}</td>
                         <td>
-                            <a href="{{route('admin.categories.edit',['category' => $category->id])}}">Edit</a>
-                            <a href="javascript:;" style="color: red">Delete</a>
+                            <a href="{{route('admin.categories.edit',['category' => $category->id])}}">Редактировать</a>
+                            <form action="{{route('admin.categories.destroy', ['category' => $category])}} " method="post">
+                                @csrf
+                                @method('delete')
+                                <button type="submit" >Удалить</button>
+                            </form>
+
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4">Not categories</td></tr>
+                    <tr><td colspan="4">Категории отсутствуют</td></tr>
                 @endforelse
             </tbody>
-
         </table>
+        {{$categories->links()}}
     </div>
 @endsection
 

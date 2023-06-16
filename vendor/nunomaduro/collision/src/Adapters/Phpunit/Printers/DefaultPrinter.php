@@ -30,7 +30,6 @@ use PHPUnit\Event\Test\PhpWarningTriggered;
 use PHPUnit\Event\Test\PreparationStarted;
 use PHPUnit\Event\Test\Skipped;
 use PHPUnit\Event\Test\WarningTriggered;
-use PHPUnit\Event\TestRunner\DeprecationTriggered as TestRunnerDeprecationTriggered;
 use PHPUnit\Event\TestRunner\ExecutionFinished;
 use PHPUnit\Event\TestRunner\ExecutionStarted;
 use PHPUnit\Event\TestRunner\WarningTriggered as TestRunnerWarningTriggered;
@@ -236,14 +235,6 @@ final class DefaultPrinter
         $throwable = ThrowableBuilder::from(new IncompleteTestError($event->message()));
 
         $this->state->add(TestResult::fromTestCase($event->test(), TestResult::RISKY, $throwable));
-    }
-
-    /**
-     * Listen to the test runner deprecation triggered.
-     */
-    public function testRunnerDeprecationTriggered(TestRunnerDeprecationTriggered $event): void
-    {
-        $this->style->writeWarning($event->message());
     }
 
     /**
