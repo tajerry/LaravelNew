@@ -10,13 +10,15 @@
                 <label for="title">
                     Наименование
                 </label>
-                <input type="text" class="form-control" name="title" id="title">
+                <input type="text" class="form-control @if($errors->has('title'))  alert-danger @endif" name="title" id="title" value="{{old('title')}}">
+                @error('title') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
             <div class="form-group">
                 <label for="description">
                     Описание
                 </label>
-                <textarea class="form-control" name="description" id="description"></textarea>
+                <textarea class="form-control  @if($errors->has('description'))  alert-danger @endif" name="description" id="description">{{old('description')}}</textarea>
+                @error('description') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
             <button type="submit" class="btn btn-success">Отправить</button>
         </form>

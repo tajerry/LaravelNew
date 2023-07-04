@@ -28,21 +28,25 @@
                 <label for="title">
                     Наименование
                 </label>
-                <input type="text" class="form-control" name="title" id="title" value="{{$news->title}}">
+                <input type="text" class="form-control @if($errors->has('title'))  alert-danger @endif" name="title" id="title" value="{{$news->title}}">
+                @error('title') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
             <div class="form-group">
                 <label for="author">
                     Автор
                 </label>
-                <input type="text" class="form-control" name="author" id="author" value="{{$news->author}}">
+                <input type="text" class="form-control @if($errors->has('author'))  alert-danger @endif" name="author" id="author" value="{{$news->author}}">
+                @error('author') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
 
             <div class="form-group">
                 <label for="image">
                     Изображение
                 </label>
-                <input type="text" class="form-control" name="image" id="image" value="{{$news->image}}">
+                <input type="file" class="form-control @if($errors->has('image'))  alert-danger @endif" name="image" id="image" value="{{$news->image}}">
+                @error('image') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
+
             <label for="status">
                 Статус
             </label>
@@ -56,7 +60,8 @@
                 <label for="description">
                     Описание
                 </label>
-                <textarea class="form-control" name="description" id="description">{{$news->description}}</textarea>
+                <textarea class="form-control  @if($errors->has('description'))  alert-danger @endif" name="description" id="description">{{$news->description}}</textarea>
+                @error('description') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
             <button type="submit" class="btn btn-success">Сохранить</button>
         </form>

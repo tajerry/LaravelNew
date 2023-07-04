@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Categories\CreateRequest;
 use App\Models\Category;
+use App\Models\News;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -35,16 +38,18 @@ class CategoryController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * @param CreateRequest $request
+     * @return RedirectResponse
      */
-    public function store(Request $request)
+    public function store(CreateRequest $request)
     {
-        $data = $request->only(['title', 'description']);
+        $data = $request->validated();
         $category = Category::create($data);
         if($category){
             return redirect()->route('admin.categories.index')
-                ->with('success','New category add');
+                ->with('success', __('messages.admin.categories.create.success'));
         }
-        return back()->with('error', 'Not added new category');
+        return back()->with('error', __('messages.admin.categories.create.fail'));
     }
 
     /**
@@ -69,35 +74,35 @@ class CategoryController extends Controller
 
     /**
      * Update the specified resource in storage.
-     * @param Request $request
+     * @param CreateRequest $request
      * @param Category $category
      * @return RedirectResponse
      */
-    public function update(Request $request, Category $category)
+    public function update(CreateRequest $request, Category $category)
     {
         $status = $category->fill($request->only(['title', 'description']))
             ->save();
         if ($status){
             return redirect()->route('admin.categories.index')
-                ->with('success','Category edite');
+                ->with('success', __('messages.admin.categories.update.success' ));
         }
-        return back()->with('error', 'Not edite category');
-
-
+        return back()->with('error', __('messages.admin.categories.update.fail'));
     }
 
     /**
      * Remove the specified resource from storage.
      * @param Category $category
+     * @return JsonResponse
      */
-    public function destroy(Category $category): RedirectResponse
+    public function destroy(Category $category)
     {
-        $status = $category->delete();
-        if ($status){
-            return redirect()->route('admin.categories.index')
-                ->with('success','Category delete');
+        try {
+            $category->delete();
+            return response()->json(['status'=>'ok']);
         }
-        return redirect()->route('admin.categories.index')
-            ->with('error', 'Not delete category');
+        catch (\Exception $e){
+            \Log::error("Категория не удалена");
+            return response()->json(['status'=>'error'], 400);
+        }
     }
 }

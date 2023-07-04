@@ -19,18 +19,14 @@
             </thead>
             <tbody>
                 @forelse($categories as $category)
-                    <tr>
+                    <tr id="{{$category->id}}">
                         <td>{{$category->id}}</td>
                         <td>{{$category->news->count()}}</td>
                         <td>{{$category->title}}</td>
                         <td>{{$category->description}}</td>
                         <td>
                             <a href="{{route('admin.categories.edit',['category' => $category->id])}}">Редактировать</a>
-                            <form action="{{route('admin.categories.destroy', ['category' => $category])}} " method="post">
-                                @csrf
-                                @method('delete')
-                                <button type="submit" >Удалить</button>
-                            </form>
+                            <a href="javascript:void(0)" data-id="{{ $category->id }}" onclick="deleteCategory(event.target)">Удалить</a>
 
                         </td>
                     </tr>
@@ -42,4 +38,20 @@
         {{$categories->links()}}
     </div>
 @endsection
-
+<script>
+    function deleteCategory(event){
+        let id = $(event).data('id');
+        let _url = `/admin/categories/${id}`;
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        $.ajax ({
+            url: _url,
+            type: 'DELETE',
+            data:{
+                _token: _token
+            },
+            success: function(request){
+                $(`#${id}`).remove();
+            }
+        });
+    }
+</script>

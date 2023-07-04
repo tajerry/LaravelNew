@@ -11,14 +11,14 @@
         <form action="{{route('admin.news.store')}}" method="post" >
             @csrf
             <label for="category_id">
-                Категория
+                Категории
             </label>
             <select name="category_id" id="category_id" class="form-control">
                 @foreach($categories as $category)
                     <option value="{{$category->id}}"
                             @if($category->id === old('category_id'))
                                 selected
-                           @endif
+                        @endif
                     >{{$category->title}}</option>
 
                 @endforeach
@@ -27,35 +27,40 @@
                 <label for="title">
                     Наименование
                 </label>
-                <input type="text" class="form-control" name="title" id="title" value="{{old('title')}}">
+                <input type="text" class="form-control @if($errors->has('title'))  alert-danger @endif" name="title" id="title" value="{{old('title')}}">
+                @error('title') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
             <div class="form-group">
                 <label for="author">
                     Автор
                 </label>
-                <input type="text" class="form-control" name="author" id="author" value="{{old('author')}}">
+                <input type="text" class="form-control @if($errors->has('author'))  alert-danger @endif" name="author" id="author" value="{{old('author')}}">
+                @error('author') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
 
             <div class="form-group">
                 <label for="image">
                     Изображение
                 </label>
-                <input type="text" class="form-control" name="image" id="image" value="{{old('image')}}">
+                <input type="file" class="form-control @if($errors->has('image'))  alert-danger @endif" name="image" id="image" value="{{old('image')}}">
+                @error('image') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
+
             <label for="status">
                 Статус
             </label>
 
             <select name="status" id="status" class="form-control">
                 <option @if(old('status') === 'DRAFT') selected @endif>DRAFT</option>
-                <option @if(old('status') === 'ACTIVE') selected @endif>ACTIVE</option>
+                <option @if(old('status')  === 'ACTIVE') selected @endif>ACTIVE</option>
                 <option @if(old('status') === 'BLOCKED') selected @endif>BLOCKED</option>
             </select>
             <div class="form-group">
                 <label for="description">
                     Описание
                 </label>
-                <textarea class="form-control" name="description" id="description">{{old('description')}}</textarea>
+                <textarea class="form-control  @if($errors->has('description'))  alert-danger @endif" name="description" id="description">{{old('description')}}</textarea>
+                @error('description') <strong style="color:red">{{$message}}</strong> @enderror
             </div>
             <button type="submit" class="btn btn-success">Отправить</button>
         </form>

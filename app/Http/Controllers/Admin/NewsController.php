@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\News\CreateRequest;
 use App\Http\Requests\News\EditRequest;
 use App\Models\Category;
+use App\Services\UploadService;
+use http\Env\Response;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -40,19 +43,19 @@ class NewsController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     * @param Request $request
+     * @param CreateRequest $request
      * @param News $news
      * @return RedirectResponse
      */
-    public function store(Request $request, News $news)
+    public function store(CreateRequest $request, News $news)
     {
-        $data = $request->only('title', 'author', 'status', 'image', 'description', 'category_id');
+        $data = $request->validated();
         $news = $news->create($data);
         if($news){
             return redirect()->route('admin.news.index')
-                ->with('success','New news add');
+                ->with('success','Новость успешно добавлена');
         }
-        return back()->with('error', 'Not added new news');
+        return back()->with('error', 'Новость не добавлена');
 
     }
 
@@ -82,31 +85,40 @@ class NewsController extends Controller
      * Update the specified resource in storage.
      * @param EditRequest $request
      * @param News $news
+     * @param UploadService $service
      * @return RedirectResponse
      */
-    public function update(EditRequest $request, News $news): RedirectResponse
+    public function update(EditRequest $request, News $news, UploadService $service): RedirectResponse
     {
+        $validated = $request->validated();
+        if($request->hasFile('image')){
+            $validated['image'] = $service->uploadFile($request->file('image'));
+        }
         $status  = $news->fill($request->validated())->save();
         if($status)
         {
             return redirect()->route('admin.news.index')
-                ->with('success', 'News edit');
+                ->with('success', 'Новость успешно отредактирована');
         }
         return back()
-            ->with('error', 'News not edit');
+            ->with('error', 'Новость не отредактирована');
     }
 
     /**
      * Remove the specified resource from storage.
+     * @param News $news
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(News $news)
     {
-        $status = $news->delete();
-        if($status){
-            return redirect()->route('admin.news.index')
-                ->with('success', 'News delete');
+        try {
+            $news->delete();
+            return response()->json(['status'=>'ok']);
         }
-        return back()
-            ->with('error', 'News not delete');
+        catch (\Exception $e){
+            \Log::error("News wasn't delete");
+            return response()->json(['status'=>'error'], 400);
+        }
     }
+
 }

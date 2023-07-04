@@ -21,7 +21,7 @@
             </thead>
             <tbody>
             @forelse($newsList as $news)
-                <tr>
+                <tr id="{{$news->id}}">
                     <td>{{$news->id}}</td>
                     <td>{{$news->category->title}}</td>
                     <td>{{$news->title}}</td>
@@ -30,12 +30,8 @@
                     <td>{{$news->image}}</td>
                     <td>{{$news->description}}</td>
                     <td>
-                        <a href="{{route('admin.news.edit',['news' => $news->id])}}">Редактировать</a>
-                        <form action="{{route('admin.news.destroy', ['news' => $news])}} " method="post">
-                            @csrf
-                            @method('delete')
-                            <button type="submit" >Удалить</button>
-                        </form>
+                        <a href="{{route('admin.news.edit',['news' => $news])}}">Редактировать</a>
+                        <a href="javascript:void(0)" data-id="{{ $news->id }}" onclick="deletePost(event.target)">Удалить</a>
                     </td>
                 </tr>
             @empty
@@ -47,4 +43,23 @@
         {{$newsList->links()}}
     </div>
 @endsection
+<script>
+    function deletePost(event) {
+        var id  = $(event).data("id");
+        let _url = `/admin/news/${id}`;
+        let _token   = $('meta[name="csrf-token"]').attr('content');
+
+        $.ajax({
+            url: _url,
+            type: 'DELETE',
+            data: {
+                _token: _token
+            },
+            success: function(response) {
+                $(`#${id}`).remove();
+            }
+        });
+    }
+
+</script>
 

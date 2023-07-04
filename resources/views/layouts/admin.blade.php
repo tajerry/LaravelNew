@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="{{asset('css/style2.css')}}">
     <!-- End Layout styles -->
     <link rel="shortcut icon" href="assets/images/favicon.ico" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
 
 
 </head>
